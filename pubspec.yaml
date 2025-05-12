@@ -11,7 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+    
+  math_expressions: ^2.3.0
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
