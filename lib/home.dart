@@ -7,3 +7,9 @@ class CalculadoraHomePage extends StatefulWidget {
   @override
   State<CalculadoraHomePage> createState() => _CalculadoraHomePageState();
 }
+
+class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
+  String display = "0";
+  String historico = "";
+  String resultado = "0";
+}
