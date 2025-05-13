@@ -1,23 +1,29 @@
+import "home.dart";
+import "style.dart";
 import 'package:flutter/material.dart';
 
-class AppThemes {
-  static final lightTheme = ThemeData(
-    primarySwatch: Colors.orange,
-    brightness: Brightness.light,
-    scaffoldBackgroundColor: Colors.white,
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(fontSize: 24),
-    ),
-  );
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
-  static final darkTheme = ThemeData(
-    primarySwatch: Colors.deepPurple,
-    brightness: Brightness.dark,
-    scaffoldBackgroundColor: Colors.black,
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(fontSize: 24, color: Colors.white70),
-    ),
-  );
+void main() {
+  runApp(const CalculadoraApp());
+}
+
+class CalculadoraApp extends StatelessWidget {
+  const CalculadoraApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, ThemeMode currentMode, _) {
+        return MaterialApp(
+          title: 'Calculadora',
+          theme: AppThemes.lightTheme,
+          darkTheme: AppThemes.darkTheme,
+          themeMode: currentMode,
+          home: const CalculadoraHomePage(),
+        );
+      },
+    );
+  }
 }

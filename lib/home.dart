@@ -44,6 +44,49 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
     });
   }
 
+  void inserirParenteses() {
+    setState(() {
+      if (display == "0") display = "";
+      display += abreParenteses ? "(" : ")";
+      abreParenteses = !abreParenteses;
+    });
+  }
+
+  void calcularResultado() {
+    setState(() {
+      try {
+        final parser = ShuntingYardParser();
+        final expression = parser.parse(display.replaceAll('x', '*'));
+        ContextModel cm = ContextModel();
+        double eval = expression.evaluate(EvaluationType.REAL, cm);
+        setState(() {
+          historico = display;
+          display = eval.toString();
+        });
+      } catch (e) {
+        mostrarErro('Expressão inválida');
+      }
+    });
+  }
+
+  void limparTudo() {
+    setState(() {
+      display = "0";
+      historico = "";
+      abreParenteses = true;
+    });
+  }
+
+  void mostrarErro(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensagem),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
