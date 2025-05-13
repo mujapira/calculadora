@@ -87,6 +87,22 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
     );
   }
 
+  Widget botao(
+    String texto, {
+    Color? corTexto,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor:
+            corTexto ?? Theme.of(context).textTheme.bodyLarge!.color,
+        textStyle: const TextStyle(fontSize: 24),
+      ),
+      child: Text(texto),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
