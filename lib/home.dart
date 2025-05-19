@@ -1,22 +1,22 @@
-import 'package:calculadora/main.dart';
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
+import 'main.dart';
 
 class CalculadoraHomePage extends StatefulWidget {
-  const CalculadoraHomePage({Key? key}) : super(key: key);
+  const CalculadoraHomePage({super.key});
 
   @override
   State<CalculadoraHomePage> createState() => _CalculadoraHomePageState();
 }
 
 class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
-  String display = "0";
-  String historico = "";
+  String display = '0';
+  List<String> historico = [];
   bool abreParenteses = true;
 
   void atualizarDisplay(String valor) {
     setState(() {
-      if (display == "0" && valor != ".") {
+      if (display == '0' && valor != '.') {
         display = valor;
       } else {
         display += valor;
@@ -25,66 +25,89 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
   }
 
   void aplicarPorcentagem() {
-    setState(() {
-      try {
-        final numero = double.parse(display);
-        setState(() {
-          display = (numero / 100).toString();
-        });
-      } catch (_) {}
-    });
+    try {
+      final numero = double.parse(display);
+      setState(() {
+        display = (numero / 100).toString();
+      });
+    } catch (_) {}
   }
 
   void alternarSinal() {
     setState(() {
       if (display.startsWith('-')) {
         display = display.substring(1);
-      } else if (display != "0") {
-        display = "-$display";
+      } else if (display != '0') {
+        display = '-$display';
       }
     });
   }
 
   void inserirParenteses() {
     setState(() {
-      if (display == "0") display = "";
-      display += abreParenteses ? "(" : ")";
+      if (display == '0') display = '';
+      display += abreParenteses ? '(' : ')';
       abreParenteses = !abreParenteses;
     });
   }
 
-  void calcularResultado() {
+  void apagarUltimoDigito() {
     setState(() {
-      try {
-        final parser = ShuntingYardParser();
-        final expression = parser.parse(display.replaceAll('x', '*'));
-        ContextModel cm = ContextModel();
-        double eval = expression.evaluate(EvaluationType.REAL, cm);
-        setState(() {
-          historico = display;
-          display = eval.toString();
-        });
-      } catch (e) {
-        mostrarErro('Expressão inválida');
+      if (display.length <= 1) {
+        display = '0';
+      } else {
+        display = display.substring(0, display.length - 1);
       }
     });
   }
 
+  void calcularResultado() {
+    try {
+      final parser = ShuntingYardParser();
+      final expression = parser.parse(display.replaceAll('x', '*'));
+      ContextModel cm = ContextModel();
+      double eval = expression.evaluate(EvaluationType.REAL, cm);
+
+      if (eval.isInfinite || eval.isNaN) {
+        mostrarErro('Erro: operação inválida/impossível.');
+        return;
+      }
+
+      setState(() {
+        String resultadoFormatado = formatarNumero(eval);
+        historico.insert(0, "$display = $resultadoFormatado");
+        display = resultadoFormatado;
+      });
+    } catch (_) {
+      mostrarErro('Expressão inválida.');
+    }
+  }
+
+  String formatarNumero(double valor) {
+    if (valor % 1 == 0) {
+      return valor.toInt().toString();
+    }
+
+    String texto = valor.toStringAsFixed(8);
+    if (RegExp(
+      r"(\d)\1{9,}",
+    ).hasMatch(texto.replaceAll('.', '').replaceAll(',', ''))) {
+      return valor.toStringAsFixed(9).replaceFirst(RegExp(r'\.?0+$'), '');
+    }
+
+    return valor.toStringAsFixed(9).replaceFirst(RegExp(r'\.?0+$'), '');
+  }
+
   void limparTudo() {
     setState(() {
-      display = "0";
-      historico = "";
-      abreParenteses = true;
+      display = '0';
+      historico.clear();
     });
   }
 
   void mostrarErro(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
     );
   }
 
@@ -97,7 +120,7 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         foregroundColor:
-            corTexto ?? Theme.of(context).textTheme.bodyLarge!.color,
+            corTexto ?? Theme.of(context).textTheme.bodyLarge?.color,
         textStyle: const TextStyle(fontSize: 24),
       ),
       child: Text(texto),
@@ -108,7 +131,7 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Calculator"),
+        title: const Text('Calculadora'),
         actions: [
           IconButton(
             icon: Icon(
@@ -138,27 +161,47 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
                   display,
                   style: const TextStyle(fontSize: 48, color: Colors.white),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  historico,
-                  style: const TextStyle(fontSize: 18, color: Colors.white70),
-                ),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Histórico",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  'Histórico',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                Text(historico, style: const TextStyle(fontSize: 14)),
+                IconButton(
+                  icon: const Icon(Icons.backspace),
+                  onPressed: apagarUltimoDigito,
+                  tooltip: 'Apagar último dígito',
+                ),
               ],
             ),
           ),
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              itemCount: historico.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 2,
+                  ),
+                  child: Text(
+                    historico[index],
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                );
+              },
+            ),
+          ),
+          const Divider(),
           Expanded(
             child: GridView.count(
               crossAxisCount: 4,
