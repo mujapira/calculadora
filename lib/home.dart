@@ -1,3 +1,4 @@
+import 'package:calculadora/main.dart';
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
 
@@ -106,8 +107,94 @@ class _CalculadoraHomePageState extends State<CalculadoraHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculadora')),
-      body: Center(child: Text(display, style: const TextStyle(fontSize: 48))),
+      appBar: AppBar(
+        title: const Text("Calculator"),
+        actions: [
+          IconButton(
+            icon: Icon(
+              themeNotifier.value == ThemeMode.light
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+            ),
+            onPressed: () {
+              themeNotifier.value =
+                  themeNotifier.value == ThemeMode.light
+                      ? ThemeMode.dark
+                      : ThemeMode.light;
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            width: double.infinity,
+            color: Colors.orange,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  display,
+                  style: const TextStyle(fontSize: 48, color: Colors.white),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  historico,
+                  style: const TextStyle(fontSize: 18, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Histórico",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(historico, style: const TextStyle(fontSize: 14)),
+              ],
+            ),
+          ),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 4,
+              padding: const EdgeInsets.all(16),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              children: [
+                botao('C', corTexto: Colors.red, onPressed: limparTudo),
+                botao('()', onPressed: inserirParenteses),
+                botao('%', onPressed: aplicarPorcentagem),
+                botao('/', onPressed: () => atualizarDisplay('/')),
+                botao('7', onPressed: () => atualizarDisplay('7')),
+                botao('8', onPressed: () => atualizarDisplay('8')),
+                botao('9', onPressed: () => atualizarDisplay('9')),
+                botao('x', onPressed: () => atualizarDisplay('x')),
+                botao('4', onPressed: () => atualizarDisplay('4')),
+                botao('5', onPressed: () => atualizarDisplay('5')),
+                botao('6', onPressed: () => atualizarDisplay('6')),
+                botao('-', onPressed: () => atualizarDisplay('-')),
+                botao('1', onPressed: () => atualizarDisplay('1')),
+                botao('2', onPressed: () => atualizarDisplay('2')),
+                botao('3', onPressed: () => atualizarDisplay('3')),
+                botao('+', onPressed: () => atualizarDisplay('+')),
+                botao('+/-', onPressed: alternarSinal),
+                botao('0', onPressed: () => atualizarDisplay('0')),
+                botao('.', onPressed: () => atualizarDisplay('.')),
+                botao(
+                  '=',
+                  corTexto: Colors.green,
+                  onPressed: calcularResultado,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
